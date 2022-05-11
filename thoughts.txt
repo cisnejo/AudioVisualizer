@@ -1,0 +1,7 @@
+1)-Only have the canvas/audio on the same component and simply 
+have the logic to change the song in the "Song" components. It
+looks like creating additional ' createmediaElementSource's
+causes an issue. 
+
+1)+Instead, just change the actual source of the audio in the
+'Song' components.
