@@ -4,7 +4,7 @@ import { SongData } from './interfaces/ISongData'
 const musicList: Array<SongData> = [
     {
 
-   
+        OnClickFunction:Function,
         id: 1,
         songName: 'whip',
         fileName: 'whip.mp3',
@@ -13,7 +13,7 @@ const musicList: Array<SongData> = [
     },
     {
 
-   
+        OnClickFunction:Function,
         id: 2,
         songName: 'trailer-sport',
         fileName: 'trailer-sport.mp3',
