@@ -5,6 +5,8 @@ import { isJsxElement, JsxElement } from 'typescript';
 
 export const Physics = () => {
     const [boxA, setBoxA] = useState('' as any)
+    const [yForce, setYForce] = useState(0 as number)
+    const [xForce, setXForce] = useState(0 as number)
     useEffect(() => {
         const Engine = Matter.Engine,
             Render = Matter.Render,
@@ -87,18 +89,30 @@ export const Physics = () => {
     ])
 
     const verticalForce = () => {
-        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: 0, y: -.3 })
+        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: 0, y: -1 * yForce / 100 })
     }
 
     const horizontalForce = () => {
-        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: .3, y:0 })
+        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: xForce / 100, y: 0 })
+    }
+    const log = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        horizontalForce()
+        verticalForce()
     }
 
     return (
         <div id='physics-body'>
             <canvas width={800} height={600} style={{ background: "0% 0% / contain rgb(20, 21, 31)" }}></canvas>
-            <button onClick={() => verticalForce()}>Apply vertical force</button>
-            <button onClick={() => horizontalForce()}>Apply horizontal force</button>
+
+
+            <form onSubmit={(e) => log(e)}>
+                <label htmlFor="">Horizontal</label>
+                <input type="text" value={xForce} onChange={(e) => { setXForce(parseInt(e.target.value)) }} />
+                <label htmlFor="">Vertical</label>
+                <input type="text" value={yForce} onChange={(e) => { setYForce(parseInt(e.target.value)) }} />
+                <button type='submit'>Apply Forces</button>
+            </form>
         </div >
 
     )
