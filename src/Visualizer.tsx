@@ -10,7 +10,6 @@ export const Visualizer = () => {
     const [audioSource, setAudioSource] = useState('' as any)
     const [analyzer, setAnalyzer] = useState('' as any)
     const [ctx, setCtx] = useState('' as any)
-    const [animationPlaying, setanimationPlaying] = useState(false)
 
     useEffect(() => {
         setAudio(document.getElementById('audio') as HTMLAudioElement)
@@ -18,7 +17,6 @@ export const Visualizer = () => {
     }, [])
 
     const LoadContext = () => {
-
         let req: number;
         audio.src = '../music/whip.mp3'
         let tempCtx = ctx as CanvasRenderingContext2D
