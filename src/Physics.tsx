@@ -4,7 +4,7 @@ import { isJsxElement, JsxElement } from 'typescript';
 
 
 export const Physics = () => {
-
+    const [boxA, setBoxA] = useState('' as any)
     useEffect(() => {
         const Engine = Matter.Engine,
             Render = Matter.Render,
@@ -61,9 +61,9 @@ export const Physics = () => {
         let groundHeight = 60
         let floor_y = canvas.height - groundHeight
         const boxA = Bodies.rectangle(boxWidth / 2, floor_y, boxWidth, 80);
-        const boxB = Bodies.rectangle(450, 50, 80, 80);
+        //const boxB = Bodies.rectangle(450, 50, 80, 80);
         const ground = Bodies.rectangle(400, 610, 810, groundHeight, { isStatic: true });
-        const boxes = [boxA, boxB, ground]
+        const boxes = [boxA, ground]
         // add all of the bodies to the world
         Composite.add(engine.world, boxes);
 
@@ -81,18 +81,24 @@ export const Physics = () => {
                const new_box = Bodies.rectangle(e.clientX, e.clientY, 20, 20)
                World.add(engine.world, new_box)
            })*/
-
-        canvas.addEventListener('click', e => {
-            Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: 0, y: -.501 })
-        })
+        setBoxA(boxA)
     }, [
 
     ])
 
+    const verticalForce = () => {
+        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: 0, y: -.3 })
+    }
+
+    const horizontalForce = () => {
+        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: .3, y:0 })
+    }
 
     return (
         <div id='physics-body'>
             <canvas width={800} height={600} style={{ background: "0% 0% / contain rgb(20, 21, 31)" }}></canvas>
+            <button onClick={() => verticalForce()}>Apply vertical force</button>
+            <button onClick={() => horizontalForce()}>Apply horizontal force</button>
         </div >
 
     )
