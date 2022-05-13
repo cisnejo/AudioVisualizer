@@ -73,7 +73,7 @@ export const Visualizer = () => {
 
     return (
         <div className='visualizer'>
-            <canvas id='canvas' height='300px' width='1000px' />
+            <canvas id='canvas' height='200px' width='1000px' />
             <audio id='audio' controls></audio>
             {/* <button onClick={(e) => HandleClick(e)}> {isPlaying ? 'Pause' : 'Play Song'}</button>
            } {musicList.map(song => {
