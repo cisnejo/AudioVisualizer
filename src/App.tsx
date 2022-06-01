@@ -9,7 +9,6 @@ const App: React.FC = () => {
     <div className="App">
       {/*} <Visualizer /> {*/}
       <Physics />
-      <Visualizer />
     </div>
   );
 }

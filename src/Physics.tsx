@@ -1,5 +1,7 @@
+import matchers from '@testing-library/jest-dom/matchers';
+import { getEventListeners } from 'events';
 import Matter, { Body } from 'matter-js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isJsxElement, JsxElement } from 'typescript';
 
 
@@ -7,65 +9,63 @@ export const Physics = () => {
     const [boxA, setBoxA] = useState('' as any)
     const [yForce, setYForce] = useState(0 as number)
     const [xForce, setXForce] = useState(0 as number)
+    // ------------states for audio------------------
+    const [contextLoaded, setContextLoaded] = useState(false)
+    const [audioContext, setAudioContext] = useState('' as any)
+    const [audio, setAudio] = useState(new Audio)
+    const [initialLoad, setInitialLoad] = useState(true)
+    const [audioSource, setAudioSource] = useState('' as any)
+    const [analyzer, setAnalyzer] = useState('' as any)
+    const [context, setContext] = useState('' as any)
+    const [currentSong, setCurrentSong] = useState('')
+    //const canvasRef = useRef<HTMLCanvasElement>(null)
+    const phyiscsBodyRef = useRef(null) as any
+
+    // ---------------------------------------------    ----
     useEffect(() => {
+        const width = 1100;
+        const height = 700;
+        //const canvas = canvasRef.current as HTMLCanvasElement
+        const phyiscsBody = phyiscsBodyRef.current
+        // ----------Engine instantiion and render handilng ------------------------------------
         const Engine = Matter.Engine,
             Render = Matter.Render,
             Runner = Matter.Runner,
             Bodies = Matter.Bodies,
             Body = Matter.Body,
             World = Matter.World,
+
             Composite = Matter.Composite;
 
         // create an engine
         const engine = Engine.create();
-        const canvas = document.querySelector('canvas')!;
-        const context = canvas?.getContext('2d')!
-
-        const render = () => {
-            var bodies = Composite.allBodies(engine.world);
-            window.requestAnimationFrame(render);
-
-            //context.fillStyle = '0% 0% / contain rgb(20, 21, 31)';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-
-            context.beginPath();
-
-            for (var i = 0; i < bodies.length; i += 1) {
-                var vertices = bodies[i].vertices;
-
-                context.moveTo(vertices[0].x, vertices[0].y);
-
-                for (var j = 1; j < vertices.length; j += 1) {
-                    context.lineTo(vertices[j].x, vertices[j].y);
-                }
-
-                context.lineTo(vertices[0].x, vertices[0].y);
+        const renderer = Matter.Render.create({
+            element: phyiscsBody,
+            engine,
+            options: {
+                width,
+                height,
+                wireframes: false,
+                background: 'rgb(100,100, 255)'
+                //      showAngleIndicator: true
             }
-            context.lineWidth = 1;
-            context.strokeStyle = '#999';
-            context.stroke();
-        }
+        });
 
-        render()
+        //const canvas = document.querySelector('canvas')!;
+        //const context = canvas.getContext('2d')!
+        const music_boxes: Array<any> = []
+
+
 
         // module aliases
 
+        //create a renderer
 
-        /* create a renderer
-        const render = Render.create({
-            element: physicsBody as HTMLElement,
-            engine: engine
-        }); */
 
-        // create two boxes and a ground
-        let boxWidth = 100;
-        let ground_y_start = canvas.height
-        let groundHeight = 60
-        let floor_y = canvas.height - groundHeight
-        const boxA = Bodies.rectangle(boxWidth / 2, floor_y, boxWidth, 80);
-        //const boxB = Bodies.rectangle(450, 50, 80, 80);
-        const ground = Bodies.rectangle(400, 610, 810, groundHeight, { isStatic: true });
-        const boxes = [boxA, ground]
+        let groundHeight = 0
+        let floor_y = height - groundHeight
+        const boxes = [boxA]
+
         // add all of the bodies to the world
         Composite.add(engine.world, boxes);
 
@@ -73,46 +73,119 @@ export const Physics = () => {
         // Render.run(render);
 
         // create runner
-        const runner = Runner.create();
 
+        const physics_audio = document.getElementById('physics-audio') as HTMLAudioElement
+        setBoxA(boxA)
+        //  setContext(context)
+        setAudio(physics_audio)
+
+        const AddBox = (e: MouseEvent) => {
+            const mouse_x = e.offsetX;
+            const mouse_y = e.offsetY;
+            const newBox = Bodies.rectangle(mouse_x, mouse_y, 10, 10);
+            Composite.add(engine.world, newBox)
+        }
+        //canvas.addEventListener('click', (e) => AddBox(e))
+        //---------------------------------
+
+        //---------------------------------
+        physics_audio.src = './music/trailer-sport.mp3'
+        physics_audio.addEventListener('play', () => {
+            let tempAudioContxt = audioContext as AudioContext
+            let tempAudioSource = audioSource as MediaElementAudioSourceNode
+            let tempAnalyzer = analyzer as AnalyserNode
+            tempAudioContxt = new AudioContext()
+            tempAudioSource = tempAudioContxt.createMediaElementSource(physics_audio);
+            tempAnalyzer = tempAudioContxt.createAnalyser();
+            tempAudioSource.connect(tempAnalyzer);
+            tempAnalyzer.connect(tempAudioContxt.destination);
+            tempAnalyzer.fftSize = 32
+            const bufferLength = tempAnalyzer.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const barWidth = width / bufferLength;
+            let barHeight;
+
+            const circleRadius = Math.floor(barWidth / 2.5)
+            console.log(bufferLength)
+
+            let previousMaxValues = []
+            setInterval(() => {
+                let x = 0;
+                for (let i = 0; i < bufferLength; i++) {
+
+                    tempAnalyzer.getByteFrequencyData(dataArray)
+
+                    barHeight = dataArray[i] / 5
+
+                    // shoot out around box
+                    let sideArray: any = [[], [], [], []]
+                    dataArray.forEach((bit, index) => sideArray[index % 4].push(bit))
+
+                    
+                    //const circleRadius = dataArray[i] 
+                    if (barHeight > 40) {
+                        const newBox = Bodies.circle(x + circleRadius, floor_y - 20, circleRadius, { render: { fillStyle: 'black' } });
+                        const box_obj = { box: newBox, boxTime: 0 }
+                        music_boxes.push(box_obj)
+                        Composite.add(engine.world, newBox)
+                        Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, { x: 0, y: -1 * dataArray[i] / 1000 })
+                        //const hue = i * 3.2
+                        //context.fillStyle = `hsl(${hue},100%,50%)`;
+                        //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
+                        x += barWidth;
+                    }
+
+                }
+            }, 50)
+
+            tempAnalyzer.getByteFrequencyData(dataArray)
+
+        })
+
+        Render.run(renderer);
+        const runner = Runner.create();
         // run the engine
         Runner.run(runner, engine);
 
-        /*
-           render.element.addEventListener('mousedown', (e) => {
-               const new_box = Bodies.rectangle(e.clientX, e.clientY, 20, 20)
-               World.add(engine.world, new_box)
-           })*/
-        setBoxA(boxA)
+
+        // Engine Event Handlers
+
+        Matter.Events.on(engine, 'afterUpdate', event => {
+            // if two objecs collide, remove one of them
+            Matter.Events.on(engine, "collisionActive", (e) => {
+                e.pairs.forEach(pair => {
+                    //console.log(pair.bodyA.circleRadius)
+                    const bodyARadius: number = pair.bodyA.circleRadius!
+                    const bodyBRadius: number = pair.bodyB.circleRadius!
+
+                    bodyARadius > bodyBRadius ? Matter.Composite.remove(engine.world, pair.bodyA) : Matter.Composite.remove(engine.world, pair.bodyB);
+
+
+                })
+            })
+
+            // remove  matter bodies if too low on canvas
+            music_boxes.forEach(box => {
+                const matterBox: Matter.Body = box.box;
+                box.boxTime = box.boxTime + 1
+                if (matterBox.position.y > height) {
+                    Matter.Composite.remove(engine.world, matterBox)
+                    const boxIndex = music_boxes.indexOf(box)
+                    music_boxes.splice(boxIndex, 1)
+                }
+            })
+        })
     }, [
 
     ])
 
-    const verticalForce = () => {
-        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: 0, y: -1 * yForce / 100 })
-    }
-
-    const horizontalForce = () => {
-        Body.applyForce(boxA, { x: boxA.position.x, y: boxA.position.y }, { x: xForce / 100, y: 0 })
-    }
-    const log = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        horizontalForce()
-        verticalForce()
-    }
 
     return (
-        <div id='physics-body'>
-            <canvas width={800} height={600} style={{ background: "0% 0% / contain rgb(20, 21, 31)" }}></canvas>
+        <div>
+            <div ref={phyiscsBodyRef} id='physics-body'>
+            </div>
+            <audio id='physics-audio' controls ></audio>
 
-
-            <form onSubmit={(e) => log(e)}>
-                <label htmlFor="">Horizontal</label>
-                <input type="text" value={xForce} onChange={(e) => { setXForce(parseInt(e.target.value)) }} />
-                <label htmlFor="">Vertical</label>
-                <input type="text" value={yForce} onChange={(e) => { setYForce(parseInt(e.target.value)) }} />
-                <button type='submit'>Apply Forces</button>
-            </form>
         </div >
 
     )
