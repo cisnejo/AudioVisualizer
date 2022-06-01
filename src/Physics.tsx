@@ -106,9 +106,9 @@ export const Physics = () => {
             let barHeight;
 
             const circleRadius = Math.floor(barWidth / 2.5)
-            console.log(bufferLength)
 
-            let previousMaxValues = []
+
+            const canvas = renderer.element.querySelector('canvas')
             setInterval(() => {
                 let x = 0;
                 for (let i = 0; i < bufferLength; i++) {
@@ -120,8 +120,13 @@ export const Physics = () => {
                     // shoot out around box
                     let sideArray: any = [[], [], [], []]
                     dataArray.forEach((bit, index) => sideArray[index % 4].push(bit))
+                    const sideObj = [
+                        { sidenum: 1, x_start: 0, y_start: 0 },
+                        { sidenum: 2, x_start: canvas?.width, y_start: 0 },
+                        { sidenum: 3, x_start: canvas?.width, y_start: canvas?.height },
+                        { sidenum: 4, x_start: 0, y_start: canvas?.height }
+                    ]
 
-                    
                     //const circleRadius = dataArray[i] 
                     if (barHeight > 40) {
                         const newBox = Bodies.circle(x + circleRadius, floor_y - 20, circleRadius, { render: { fillStyle: 'black' } });
