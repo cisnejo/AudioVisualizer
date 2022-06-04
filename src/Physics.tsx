@@ -1,8 +1,9 @@
 import matchers from '@testing-library/jest-dom/matchers';
 import { getEventListeners } from 'events';
-import Matter, { Body } from 'matter-js';
+import Matter, { Body, Vector } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
 import { isJsxElement, JsxElement } from 'typescript';
+
 
 
 export const Physics = () => {
@@ -42,6 +43,7 @@ export const Physics = () => {
         const renderer = Matter.Render.create({
             element: phyiscsBody,
             engine,
+
             options: {
                 width,
                 height,
@@ -50,7 +52,25 @@ export const Physics = () => {
                 //      showAngleIndicator: true
             }
         });
+        engine.gravity.scale = 0;
 
+        var attractiveBody = Matter.Bodies.circle(100, 100, 10, {
+            plugin: {
+                attractors: [
+                    function (bodyA: Matter.Body, bodyB: Matter.Body) {
+
+                        return {
+
+                            x: (bodyA.position.x - bodyB.position.x) * 1e-6,
+                            y: (bodyA.position.y - bodyB.position.y) * 1e-6,
+                        };
+                    }
+                ]
+            }
+        }
+        );
+
+        Composite.add(engine.world, attractiveBody)
         //const canvas = document.querySelector('canvas')!;
         //const context = canvas.getContext('2d')!
         const music_boxes: Array<any> = []
@@ -89,7 +109,7 @@ export const Physics = () => {
         //---------------------------------
 
         //---------------------------------
-        physics_audio.src = './music/trailer-sport.mp3'
+        physics_audio.src = './music/whip.mp3'
         physics_audio.addEventListener('play', () => {
             let tempAudioContxt = audioContext as AudioContext
             let tempAudioSource = audioSource as MediaElementAudioSourceNode
@@ -105,43 +125,101 @@ export const Physics = () => {
             const barWidth = width / bufferLength;
             let barHeight;
 
-            const circleRadius = Math.floor(barWidth / 2.5)
+            const circleRadius = Math.floor(barWidth / 2.5) / 3
 
 
             const canvas = renderer.element.querySelector('canvas')
             setInterval(() => {
                 let x = 0;
-                for (let i = 0; i < bufferLength; i++) {
+                // shoot out around box
+                let sideArray: number[][] = [[], [], [], []]
+                dataArray.forEach((bit, index) => sideArray[index % 4].push(bit))
+                const velocity_delta = -1 * 1 / (sideArray[0].length - 1)
+                const sideObj = [
+                    { sidenum: 1, x_start: canvas?.width! / bufferLength, y_start: circleRadius },
+                    { sidenum: 2, x_start: canvas?.width! - circleRadius, y_start: canvas?.height! / bufferLength },
+                    { sidenum: 3, x_start: canvas?.width! * (1 - 1 / bufferLength), y_start: canvas?.height! - circleRadius },
+                    { sidenum: 4, x_start: circleRadius, y_start: canvas?.height! * (1 - 1 / bufferLength) }
+                ]
 
+                sideArray.forEach((array, index) => {
                     tempAnalyzer.getByteFrequencyData(dataArray)
+                    const modIndex = index % 4;
 
-                    barHeight = dataArray[i] / 5
+                    // let x_velocity = .5
 
-                    // shoot out around box
-                    let sideArray: any = [[], [], [], []]
-                    dataArray.forEach((bit, index) => sideArray[index % 4].push(bit))
-                    const sideObj = [
-                        { sidenum: 1, x_start: 0, y_start: 0 },
-                        { sidenum: 2, x_start: canvas?.width, y_start: 0 },
-                        { sidenum: 3, x_start: canvas?.width, y_start: canvas?.height },
-                        { sidenum: 4, x_start: 0, y_start: canvas?.height }
-                    ]
+                    const newWidth = width / array.length
 
-                    //const circleRadius = dataArray[i] 
-                    if (barHeight > 40) {
-                        const newBox = Bodies.circle(x + circleRadius, floor_y - 20, circleRadius, { render: { fillStyle: 'black' } });
-                        const box_obj = { box: newBox, boxTime: 0 }
-                        music_boxes.push(box_obj)
-                        Composite.add(engine.world, newBox)
-                        Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, { x: 0, y: -1 * dataArray[i] / 1000 })
-                        //const hue = i * 3.2
-                        //context.fillStyle = `hsl(${hue},100%,50%)`;
-                        //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
-                        x += barWidth;
-                    }
+                    array.forEach(number => {
+                        let velocity: Vector = { x: 0, y: 0 };
+                        let xPosition = sideObj[modIndex].x_start!;
+                        let yPosition = sideObj[modIndex].y_start!;
+                        let speed = .01
+                        if (modIndex == 0) {
+                            velocity = { x: 0, y: speed }
+                        }
+                        if (modIndex == 1) {
+                            velocity = { x: -speed, y: 0 }
+                        }
+                        if (modIndex == 2) {
+                            velocity = { x: 0, y: -speed }
+                        }
+                        if (modIndex == 3) {
+                            velocity = { x: speed, y: 0 }
+                        }
 
-                }
-            }, 50)
+                        if (number / 5 > 40) {
+                            const newBox = Bodies.circle(xPosition, yPosition, circleRadius, { render: { fillStyle: 'black' } });
+                            const box_obj = { box: newBox, boxTime: 0 }
+                            music_boxes.push(box_obj)
+                            Composite.add(engine.world, newBox)
+                            Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, velocity)
+                            //const hue = i * 3.2
+                            //context.fillStyle = `hsl(${hue},100%,50%)`;
+                            //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
+
+                            if (modIndex == 0) {
+                                sideObj[modIndex] = { ...sideObj[modIndex], x_start: sideObj[modIndex].x_start! + newWidth }
+                            }
+                            if (modIndex == 1) {
+                                sideObj[modIndex] = { ...sideObj[modIndex], y_start: sideObj[modIndex].y_start! + newWidth }
+                            }
+                            if (modIndex == 2) {
+                                sideObj[modIndex] = {
+                                    ...sideObj[modIndex], x_start: sideObj[modIndex].x_start! - newWidth,
+                                }
+                            }
+                            if (modIndex == 3) {
+                                sideObj[modIndex] = { ...sideObj[modIndex], y_start: sideObj[modIndex].y_start! - newWidth }
+                            }
+
+                            //x_velocity += velocity_delta
+                        }
+                    })
+                })
+
+                // for (let i = 0; i < bufferLength; i++) {
+
+
+                //     tempAnalyzer.getByteFrequencyData(dataArray)
+                //     barHeight = dataArray[i] / 5
+
+
+                //     //const circleRadius = dataArray[i] 
+                //     if (barHeight > 40) {
+                //         const newBox = Bodies.circle(x + circleRadius, floor_y - 20, circleRadius, { render: { fillStyle: 'black' } });
+                //         const box_obj = { box: newBox, boxTime: 0 }
+                //         music_boxes.push(box_obj)
+                //         Composite.add(engine.world, newBox)
+                //         Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, { x: 0, y: -1 * dataArray[i] / 1000 })
+                //         //const hue = i * 3.2
+                //         //context.fillStyle = `hsl(${hue},100%,50%)`;
+                //         //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
+                //         x += barWidth;
+                //     }
+
+                // }
+            }, 10)
 
             tempAnalyzer.getByteFrequencyData(dataArray)
 
@@ -163,7 +241,7 @@ export const Physics = () => {
                     const bodyARadius: number = pair.bodyA.circleRadius!
                     const bodyBRadius: number = pair.bodyB.circleRadius!
 
-                    bodyARadius > bodyBRadius ? Matter.Composite.remove(engine.world, pair.bodyA) : Matter.Composite.remove(engine.world, pair.bodyB);
+                    bodyARadius > bodyBRadius && pair.bodyA !== attractiveBody && pair.bodyB !== attractiveBody ? Matter.Composite.remove(engine.world, pair.bodyA) : Matter.Composite.remove(engine.world, pair.bodyB);
 
 
                 })
