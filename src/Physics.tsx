@@ -219,7 +219,7 @@ export const Physics = () => {
                 //     }
 
                 // }
-            }, 10)
+            }, 50)
 
             tempAnalyzer.getByteFrequencyData(dataArray)
 
