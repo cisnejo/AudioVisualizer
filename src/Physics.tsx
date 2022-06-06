@@ -154,7 +154,7 @@ export const Physics = () => {
                         let velocity: Vector = { x: 0, y: 0 };
                         let xPosition = sideObj[modIndex].x_start!;
                         let yPosition = sideObj[modIndex].y_start!;
-                        let speed = .01
+                        let speed = .001
                         if (modIndex == 0) {
                             velocity = { x: 0, y: speed }
                         }
