@@ -26,7 +26,7 @@ export const Visualizer = () => {
 
         /* Setup Audio Context and Audio Source for Node Analyzer
         / Cannot change the reference to the Audio Context or create an additional Media Element Source*/
-        if (initialLoad) {
+        if (initialLoad) {                        
             audio.addEventListener('play', () => animate())
             tempCtx = canvas.getContext('2d')!
             tempAudioContxt = new AudioContext()
