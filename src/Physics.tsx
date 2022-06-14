@@ -75,7 +75,6 @@ export const Physics = () => {
                 const circleRadius = Math.floor(barWidth / 5)
 
 
-<<<<<<< HEAD
                 const canvas = renderer.element.querySelector('canvas')
                 setInterval(() => {
                     let x = 0;
@@ -94,57 +93,6 @@ export const Physics = () => {
                         tempAnalyzer.getByteFrequencyData(dataArray)
                         const modIndex = index % 4;
                         const newWidth = width / array.length
-=======
-            const canvas = renderer.element.querySelector('canvas')
-            setInterval(() => {
-                let x = 0;
-                // shoot out around box
-                let sideArray: number[][] = [[], [], [], []]
-                dataArray.forEach((bit, index) => sideArray[index % 4].push(bit))
-                const velocity_delta = -1 * 1 / (sideArray[0].length - 1)
-                const sideObj = [
-                    { sidenum: 1, x_start: canvas?.width! / bufferLength, y_start: circleRadius },
-                    { sidenum: 2, x_start: canvas?.width! - circleRadius, y_start: canvas?.height! / bufferLength },
-                    { sidenum: 3, x_start: canvas?.width! * (1 - 1 / bufferLength), y_start: canvas?.height! - circleRadius },
-                    { sidenum: 4, x_start: circleRadius, y_start: canvas?.height! * (1 - 1 / bufferLength) }
-                ]
-
-                sideArray.forEach((array, index) => {
-                    tempAnalyzer.getByteFrequencyData(dataArray)
-                    const modIndex = index % 4;
-
-                    // let x_velocity = .5
-
-                    const newWidth = width / array.length
-
-                    array.forEach(number => {
-                        let velocity: Vector = { x: 0, y: 0 };
-                        let xPosition = sideObj[modIndex].x_start!;
-                        let yPosition = sideObj[modIndex].y_start!;
-                        let speed = .001
-                        if (modIndex == 0) {
-                            velocity = { x: 0, y: speed }
-                        }
-                        if (modIndex == 1) {
-                            velocity = { x: -speed, y: 0 }
-                        }
-                        if (modIndex == 2) {
-                            velocity = { x: 0, y: -speed }
-                        }
-                        if (modIndex == 3) {
-                            velocity = { x: speed, y: 0 }
-                        }
-
-                        if (number / 5 > 40) {
-                            const newBox = Bodies.circle(xPosition, yPosition, circleRadius, { render: { fillStyle: 'black' } });
-                            const box_obj = { box: newBox, boxTime: 0 }
-                            music_boxes.push(box_obj)
-                            Composite.add(engine.world, newBox)
-                            Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, velocity)
-                            //const hue = i * 3.2
-                            //context.fillStyle = `hsl(${hue},100%,50%)`;
-                            //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
->>>>>>> 5aef8101e399afd0e2e922635ab8ffd3960d54a1
 
                         array.forEach((number) => {
                             let velocity: Vector = { x: 0, y: 0 };
@@ -189,36 +137,7 @@ export const Physics = () => {
                             colorIndex++
                         })
                     })
-<<<<<<< HEAD
                 }, 10)
-=======
-                })
-
-                // for (let i = 0; i < bufferLength; i++) {
-
-
-                //     tempAnalyzer.getByteFrequencyData(dataArray)
-                //     barHeight = dataArray[i] / 5
-
-
-                //     //const circleRadius = dataArray[i] 
-                //     if (barHeight > 40) {
-                //         const newBox = Bodies.circle(x + circleRadius, floor_y - 20, circleRadius, { render: { fillStyle: 'black' } });
-                //         const box_obj = { box: newBox, boxTime: 0 }
-                //         music_boxes.push(box_obj)
-                //         Composite.add(engine.world, newBox)
-                //         Body.applyForce(newBox, { x: newBox.position.x, y: newBox.position.y }, { x: 0, y: -1 * dataArray[i] / 1000 })
-                //         //const hue = i * 3.2
-                //         //context.fillStyle = `hsl(${hue},100%,50%)`;
-                //         //context.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
-                //         x += barWidth;
-                //     }
-
-                // }
-            }, 50)
-
-            tempAnalyzer.getByteFrequencyData(dataArray)
->>>>>>> 5aef8101e399afd0e2e922635ab8ffd3960d54a1
 
                 tempAnalyzer.getByteFrequencyData(dataArray)
                 firstTimePlaying = false
