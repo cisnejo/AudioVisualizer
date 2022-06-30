@@ -1,6 +1,19 @@
 import Matter, { Body, Vector } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
 
+import styled from 'styled-components'
+
+const Wrapper = styled.div`
+    padding-top:3rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    input{
+        width:12rem;
+    }
+`
 export const Physics = () => {
     const [boxA, setBoxA] = useState('' as any)
     // ------------states for audio------------------
@@ -107,7 +120,7 @@ export const Physics = () => {
                     const newWidth = width / array.length
                     const htmlInput: HTMLInputElement = document.querySelector('#rate-slider')!
                     array.forEach((number) => {
-                        let speed = parseInt(htmlInput.value)/10000
+                        let speed = parseInt(htmlInput.value) / 10000
                         number = number / 5
                         let velocity: Vector = { x: 0, y: 0 };
                         let xPosition = sideObj[modIndex].x_start!;
@@ -168,16 +181,15 @@ export const Physics = () => {
 
     ])
     return (
-        <div>
+        <Wrapper>
             <div ref={phyiscsBodyRef} id='physics-body'>
             </div>
             <audio id='physics-audio' controls ></audio>
             <label htmlFor="size">Size</label>
             <input type="range" min="1" max="3" defaultValue={1} />
-            <label htmlFor="rate">Rate</label>
+            <label htmlFor="Speed">Speed</label>
             <input id='rate-slider' type="range" min="1" max="100" defaultValue={25} />
-
-        </div >
+        </Wrapper >
 
     )
 }
